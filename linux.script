@@ -1,0 +1,113 @@
+// Grab the display element and buttons
+const display = document.getElementById("display");
+const buttons = document.querySelectorAll(".button");
+
+// Initialize variables for input parsing and calculation
+let currentInput = "";
+let operator = "";
+let firstValue = null;
+let secondValue = null;
+let result = null;
+let isError = false;
+
+// Event listener for each button click
+buttons.forEach(button => {
+  button.addEventListener("click", (event) => {
+    const value = event.target.getAttribute("data-value");
+
+    if (value === "C") {
+      clearDisplay();
+    } else if (value === "=") {
+      handleEquals();
+    } else if (["/", "*", "-", "+"].includes(value)) {
+      handleOperator(value);
+    } else {
+      handleInput(value);
+    }
+  });
+});
+
+// Event listener for keyboard input
+document.addEventListener("keydown", (event) => {
+  const key = event.key;
+
+  if (key === "Backspace" || key === "c") {
+    clearDisplay();
+  } else if (key === "=" || key === "Enter") {
+    handleEquals();
+  } else if (["/", "*", "-", "+"].includes(key)) {
+    handleOperator(key);
+  } else if ((key >= "0" && key <= "9") || key === ".") {
+    handleInput(key);
+  }
+});
+
+// Clear the display and reset all variables
+function clearDisplay() {
+  currentInput = "";
+  firstValue = null;
+  secondValue = null;
+  operator = "";
+  result = null;
+  isError = false;
+  display.value = "";
+}
+
+// Handle input when a number or decimal is clicked/typed
+function handleInput(value) {
+  if (isError) {
+    clearDisplay();
+  }
+  currentInput += value;
+  display.value = currentInput;
+}
+
+// Handle operator button click/keyboard input
+function handleOperator(op) {
+  if (firstValue === null) {
+    firstValue = parseFloat(currentInput);
+  } else if (currentInput) {
+    secondValue = parseFloat(currentInput);
+    result = calculate(firstValue, secondValue, operator);
+    display.value = result;
+    firstValue = result;
+  }
+  operator = op;
+  currentInput = "";
+}
+
+// Handle equals button click/keyboard input
+function handleEquals() {
+  if (currentInput) {
+    secondValue = parseFloat(currentInput);
+    result = calculate(firstValue, secondValue, operator);
+    if (result === "Error") {
+      display.value = result;
+      isError = true;
+    } else {
+      display.value = result;
+      currentInput = result.toString();
+      firstValue = result;
+      operator = "";
+    }
+  }
+}
+
+// Perform the calculation based on the operator
+function calculate(firstValue, secondValue, operator) {
+  switch (operator) {
+    case "+":
+      return firstValue + secondValue;
+    case "-":
+      return firstValue - secondValue;
+    case "*":
+      return firstValue * secondValue;
+    case "/":
+      if (secondValue === 0) {
+        return "Error"; // Division by zero error
+      }
+      return firstValue / secondValue;
+    default:
+      return secondValue;
+  }
+}
